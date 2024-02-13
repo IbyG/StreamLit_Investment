@@ -35,7 +35,7 @@ if st.button("Submit"):
 #    print(row)
 
 ################################################################################
-#Getting the latest Amount
+#Getting the latest Amount and showing it in a widget
 latestAmount = "SELECT amount FROM Data ORDER BY date DESC LIMIT 1;"
 df = pd.read_sql_query(latestAmount,conn)
 latest_amount = df.iloc[0, 0]
@@ -67,7 +67,7 @@ st.table(df)
 
 
 #Close the cursor and connection
-#cursor.close()
-#conn.close()
+cursor.close()
+conn.close()
 
 
