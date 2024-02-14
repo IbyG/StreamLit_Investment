@@ -25,10 +25,7 @@ The application displays the following metrics:
 To run the application locally:
 
 1. Clone this repository to your local machine.
-2. Run the `app.py` file using Streamlit: ``` python3 -m streamlit run main.py ```
-
-# streamlit run app.py
-
+2. Run the `main.py` file using Streamlit: ``` python3 -m streamlit run main.py ```
 
 ## Dependencies
 
