@@ -107,7 +107,24 @@ def sidebar():
         conn.commit() 
 
 
+def raw_table():
+    query = "SELECT date AS 'Date',amount AS 'Amount',lag(amount, 1, 0) OVER (ORDER BY date DESC) - amount AS 'Difference' FROM Data ORDER BY date DESC;"
+    df = pd.read_sql_query(query, conn)
+    #rouding the values to 2 decimal places
+    # Round the 'Amount' and 'Difference' columns to two decimal places
+    df['Amount'] = df['Amount'].round(2)
+    df['Difference'] = df['Difference'].round(2)
+    
+    def highlight_diff(val):
+        color = 'green' if val >= 0 else 'red'
+        return f'color: {color}'
 
+    # Apply conditional formatting to the 'Difference' column
+    df_styled = df.style.applymap(highlight_diff, subset=['Difference'])
+
+    # Display the styled DataFrame
+    #df_styled
+    st.dataframe(df_styled)
 
 #form_section()
 sidebar()
@@ -115,6 +132,7 @@ widget_section()
 #streamlit_lineChart()
 plotly_LineChart()
 Average_Amount_Table()
+raw_table()
 
 
 #Close the cursor and connection
