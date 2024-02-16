@@ -77,7 +77,7 @@ def streamlit_lineChart():
     #print(df)
 
     # Display line chart using Streamlit
-    st.write("""#### Monthly Average""")
+    st.write("""#### Account Trend""")
     st.line_chart(df.set_index('Month and Year'))
 
 
