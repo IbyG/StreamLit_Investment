@@ -20,7 +20,7 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS Data (
                     date DATE,
                     amount DOUBLE)''')
 
-st.write(""" # Investment App  """)
+st.write(""" # Investment Dashboard  """)
 col1, col2 =st.columns(2)
 def form_section():
     with col1:
@@ -40,7 +40,7 @@ def form_section():
 #for row in rows:
 #    print(row)
 
-
+col1, col2 =st.columns(2)
 def widget_section():
     #Getting the latest Amount and showing it in a widget
     latestAmount = "SELECT amount FROM Data ORDER BY date DESC LIMIT 1;"
@@ -53,9 +53,20 @@ def widget_section():
 
     #difference between current and previous
     difference = round(latest_amount - Sec_Amount, 2)
+    with col1:
+        st.metric(label="Current Account Holding", value=latest_amount,delta=difference)
+        #st.metric(label="Previous Account Holding", value=Sec_Amount)
 
-    st.metric(label="Current Account Holding", value=latest_amount,delta=difference)
-    #st.metric(label="Previous Account Holding", value=Sec_Amount)
+
+    #Current Invested amount
+    Invested_Amount = 9700
+    #Total Profit/Loss
+    Prof_Loss = round(latest_amount - Invested_Amount,2)
+    #Prof_Loss_Perc = round((Sec_Amount/Invested_Amount)*100,2)
+    with col2:
+        st.metric(label="Current Profit/Loss", value=Prof_Loss)
+
+
 
 
 def streamlit_lineChart():
@@ -76,7 +87,7 @@ def plotly_LineChart():
     query = "SELECT date as 'Date',amount as 'Amount' FROM Data ORDER BY date DESC;"
     df = pd.read_sql_query(query, conn, parse_dates=['Month and Year'])
 
-    print(df)
+    #print(df)
 
     # Display line chart using Streamlit
     #st.write("""#### Monthly Average""")
@@ -89,6 +100,7 @@ def plotly_LineChart():
     st.plotly_chart(fig)
 
 def Average_Amount_Table():
+    st.write("# Average Acount Amount")
     query = "SELECT strftime('%m-%Y', date) AS 'Month and Year', ROUND(AVG(amount), 2) AS 'Average Amount' FROM Data GROUP BY strftime('%m-%Y', date) ORDER BY date DESC;"
     df = pd.read_sql_query(query, conn)
     st.table(df)
@@ -108,30 +120,35 @@ def sidebar():
 
 
 def raw_table():
-    query = "SELECT date AS 'Date',amount AS 'Amount',lag(amount, 1, 0) OVER (ORDER BY date DESC) - amount AS 'Difference' FROM Data ORDER BY date DESC;"
+    query = "SELECT date AS 'Date',amount AS 'Amount',lag(amount, 1, 0) OVER (ORDER BY date DESC) - amount AS 'Difference' FROM Data ORDER BY date ASC;"
     df = pd.read_sql_query(query, conn)
-    #rouding the values to 2 decimal places
-    # Round the 'Amount' and 'Difference' columns to two decimal places
-    df['Amount'] = df['Amount'].round(2)
-    df['Difference'] = df['Difference'].round(2)
-    
+  
+    # Round the 'Amount' and 'Difference' columns to 2 decimal places
+    #df['Amount'] = df['Amount'].round(2)
+    #df['Difference'] = df['Difference'].round(2)
+    # Format the 'Date' column to dd-mm-yyyy
+    df['Date'] = pd.to_datetime(df['Date']).dt.strftime('%d-%m-%Y')
+  
+ 
     def highlight_diff(val):
         color = 'green' if val >= 0 else 'red'
         return f'color: {color}'
 
+    
     # Apply conditional formatting to the 'Difference' column
-    df_styled = df.style.applymap(highlight_diff, subset=['Difference'])
+    df_styled = df.style.applymap(highlight_diff, subset=['Difference']).format({'Amount': '{:.2f}', 'Difference': '{:.2f}'})
 
     # Display the styled DataFrame
     #df_styled
-    st.dataframe(df_styled)
+    st.write(" # Raw Data")
+    st.dataframe(df_styled,width=800)
 
 #form_section()
 sidebar()
 widget_section()
 #streamlit_lineChart()
 plotly_LineChart()
-Average_Amount_Table()
+#Average_Amount_Table()
 raw_table()
 
 
