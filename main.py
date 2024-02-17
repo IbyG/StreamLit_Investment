@@ -14,31 +14,19 @@ conn = sqlite3.connect('Finance.db')
  # Create a cursor object to execute SQL commands
 cursor = conn.cursor()
 
-# Create a table
+# Create the Data table
 cursor.execute('''CREATE TABLE IF NOT EXISTS Data (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     date DATE,
                     amount DOUBLE)''')
 
-st.write(""" # Investment Dashboard  """)
-col1, col2 =st.columns(2)
-def form_section():
-    with col1:
-        date = st.date_input("Current Date", datetime.date.today(),format="DD/MM/YYYY")
-    with col2:
-        amount = st.number_input("Insert Amount")
-    #submit_button = st.button('Submit', type="secondary")
-    # Insert data into the table
-    if st.button("Submit"):
-        cursor.execute("INSERT INTO Data (date,amount) VALUES (?,?)", (date,amount))
-        conn.commit() 
+#Create the Investment Tabel
+cursor.execute('''CREATE TABLE IF NOT EXISTS Investment (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    date DATE,
+                    InvestedAmount DOUBLE)''')
 
-   
-# Retrieve data from the table
-#cursor.execute("SELECT * FROM Data")
-#rows = cursor.fetchall()
-#for row in rows:
-#    print(row)
+st.write(""" # Investment Dashboard  """)
 
 col1, col2 =st.columns(2)
 def widget_section():
@@ -59,7 +47,10 @@ def widget_section():
 
 
     #Current Invested amount
-    Invested_Amount = 9700
+    Invested_Amount_que = "SELECT sum(InvestedAmount) as InvestedAmount FROM Investment;"
+    df = pd.read_sql_query(Invested_Amount_que,conn)
+    Invested_Amount = df.iloc[0,0]
+    #print(Invested_Amount)
     #Total Profit/Loss
     Prof_Loss = round(latest_amount - Invested_Amount,2)
     #Prof_Loss_Perc = round((Sec_Amount/Invested_Amount)*100,2)
@@ -87,6 +78,8 @@ def plotly_LineChart():
     query = "SELECT date as 'Date',amount as 'Amount' FROM Data ORDER BY date DESC;"
     df = pd.read_sql_query(query, conn, parse_dates=['Month and Year'])
 
+    inv_query = "Select date as 'Date', InvestedAmount as 'Invested Amount' FROM Investment ORDER BY date DESC;"
+    inv_df = pd.read_sql_query(inv_query,conn,parse_dates=['Month and Year'])
     #print(df)
 
     # Display line chart using Streamlit
@@ -95,7 +88,11 @@ def plotly_LineChart():
 
     #plotly line chart
     fig = px.line(df, x="Date", y="Amount", title='Account Trend',markers=True)
-    fig.update_layout(yaxis=dict(tickformat=".2f"))
+    # Add line chart for the second DataFrame (inv_df) to the same figure
+    fig.add_scatter(x=inv_df['Date'], y=inv_df['Invested Amount'], mode='lines+markers', name='Invested Amount')
+    # Update layout to 2 decimal places
+    fig.update_layout(yaxis=dict(tickformat="$,.2f"))
+    #fig.px.line(inv_df)
     ##fig.show()
     st.plotly_chart(fig)
 
@@ -109,14 +106,35 @@ def Average_Amount_Table():
 
 
 def sidebar():
-    st.sidebar.write(""" # Entry Form   """)
+    #st.sidebar.write(""" # Account Value Form   """)
+    st.sidebar.write(""" # Data Entry Form  """)
     date = st.sidebar.date_input("Date", datetime.date.today(),format="DD/MM/YYYY")
-    amount = st.sidebar.number_input("Amount")
+    amount = st.sidebar.number_input("Current Account Value",help="The Account value that you see in vanguard")
+    #submit_button = st.button('Submit', type="secondary")
+    # Insert data into the table
+    
+    #st.sidebar.write(""" # Investment Value Form   """)
+    inv_amount = st.sidebar.number_input("Invested amount",help="What ever the amount you have invested on that date example $500 on 01/01/2024")
     #submit_button = st.button('Submit', type="secondary")
     # Insert data into the table
     if st.sidebar.button("Submit"):
-        cursor.execute("INSERT INTO Data (date,amount) VALUES (?,?)", (date,amount))
-        conn.commit() 
+        if(amount != 0):   
+            cursor.execute("INSERT INTO Data (date,amount) VALUES (?,?)", (date,amount))
+            conn.commit() 
+            st.sidebar.success("Inserted the Acount Value Data")
+        if(inv_amount != 0):
+            cursor.execute("INSERT INTO Investment (date,InvestedAmount) VALUES (?,?)", (date,inv_amount))
+            conn.commit() 
+            st.sidebar.success("Inserted the Investment Amount Data")
+            #We  add the investment amount the total account amount now if the current account value field is empty
+            if(amount == 0):
+                latestAmount = "SELECT amount FROM Data ORDER BY date DESC LIMIT 1;"
+                df = pd.read_sql_query(latestAmount,conn)
+                latest_amount = df.iloc[0, 0]+ inv_amount
+                #latest_amount = latest_amount + inv_amount
+                cursor.execute("INSERT INTO Data (date,amount) VALUES (?,?)", (date,latest_amount))
+                conn.commit() 
+
 
 
 def raw_table():
@@ -143,7 +161,6 @@ def raw_table():
     st.write(" # Raw Data")
     st.dataframe(df_styled,width=800)
 
-#form_section()
 sidebar()
 widget_section()
 #streamlit_lineChart()
