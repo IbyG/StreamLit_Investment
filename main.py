@@ -28,7 +28,7 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS Investment (
 
 st.write(""" # Investment Dashboard  """)
 
-col1, col2 =st.columns(2)
+col1, col2,col3 =st.columns(3)
 def widget_section():
     #Getting the latest Amount and showing it in a widget
     latestAmount = "SELECT amount FROM Data ORDER BY date DESC LIMIT 1;"
@@ -41,9 +41,7 @@ def widget_section():
 
     #difference between current and previous
     difference = round(latest_amount - Sec_Amount, 2)
-    with col1:
-        st.metric(label="Current Account Holding", value=latest_amount,delta=difference)
-        #st.metric(label="Previous Account Holding", value=Sec_Amount)
+    
 
 
     #Current Invested amount
@@ -54,9 +52,16 @@ def widget_section():
     #Total Profit/Loss
     Prof_Loss = round(latest_amount - Invested_Amount,2)
     #Prof_Loss_Perc = round((Sec_Amount/Invested_Amount)*100,2)
+    with col1:
+        st.metric(label="Total Invested Amount", value="$ " + str(Invested_Amount))
     with col2:
-        st.metric(label="Current Profit/Loss", value=Prof_Loss)
+        st.metric(label="Current Account Holding", value="$ "+str(latest_amount),delta="$ "+str(difference))
+    with col3:
+        st.metric(label="Current Profit/Loss", value="$ "+ str(Prof_Loss))
 
+
+
+    
 
 
 
@@ -159,7 +164,7 @@ def raw_table():
     # Display the styled DataFrame
     #df_styled
     st.write(" # Raw Data")
-    st.dataframe(df_styled,width=800)
+    st.dataframe(df_styled,width=800,hide_index=True)
 
 sidebar()
 widget_section()

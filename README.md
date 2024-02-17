@@ -1,39 +1,56 @@
-# Investment App
+# Investment Dashboard
 
-This is a Streamlit web application for managing investments. Users can input their investment amounts and view various metrics and visualizations.
+This Streamlit app provides an investment dashboard to track account values, investment amounts, and visualize account trends.
 
-## Features
+## Overview
 
-- **Current Date:** Users can select the current date for their investment input.
-- **Insert Amount:** Users can input their investment amount.
-- **Submit Button:** Users can submit their investment data.
+The app is built using Python and Streamlit, with data stored in a SQLite database. It allows users to input account values and investment amounts, and then provides various metrics, visualizations, and raw data for analysis.
 
-The application stores investment data in a SQLite database named `Finance.db`. It creates a table named `Data` to store investment records with columns for `id`, `date`, and `amount`.
+## Data Storage
 
-### Metrics
+The app connects to a SQLite database named 'Finance.db' and creates two tables: 'Data' for account values and 'Investment' for investment amounts. The tables are structured with date and amount columns to store the relevant data.
 
-The application displays the following metrics:
+## Widgets and Metrics
 
-- **Current Account Holding:** Shows the latest investment amount and the difference from the previous investment.
+The app includes a sidebar for data entry and displays the following metrics:
+- Total Invested Amount
+- Current Account Holding
+- Current Profit/Loss
 
-### Visualisations
+## Visualizations
 
-- **Monthly Average:** Displays a line chart showing the monthly average investment amount over time.
-
-## Getting Started
-
-To run the application locally:
-
-1. Clone this repository to your local machine.
-2. Run the `main.py` file using Streamlit: ``` python3 -m streamlit run main.py ```
+The app provides the following visualizations:
+- Account Trend Line Chart
+- Account Trend Line Chart with Investment Amount
+- Raw Data Table
 
 ## Dependencies
 
-- Streamlit
-- SQLite
-- Pandas
-- Datetime
+The app relies on the following Python libraries:
+- streamlit
+- datetime
+- sqlite3
+- pandas
+- plotly.express
 
-## License
+These dependencies can be installed using the following command:
+```bash
+pip install streamlit pandas plotly 
+```
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## How to Use
+
+To use the app, follow these steps:
+1. Run the provided Python code. Run the `main.py` file using Streamlit: ``` python3 -m streamlit run main.py ```
+2. Input account values and investment amounts in the sidebar.
+3. View the metrics and visualizations to analyze account trends and investment performance.
+
+
+
+
+## Closing
+
+This Streamlit app offers a convenient way to track and visualize investment data, making it easier to monitor account values and investment performance over time.
+
+For any questions or feedback, please feel free to reach out.
+
