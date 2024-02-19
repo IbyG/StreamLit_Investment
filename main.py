@@ -3,6 +3,7 @@ import datetime
 import sqlite3
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objs as go
 
 #st.set_page_config(layout="wide")
 
@@ -79,13 +80,13 @@ def streamlit_lineChart():
 
 
 def plotly_LineChart():
-    # Read data into a DataFrame
-    query = "SELECT date as 'Date',amount as 'Amount' FROM Data ORDER BY date DESC;"
-    df = pd.read_sql_query(query, conn, parse_dates=['Month and Year'])
-
+    Account_query = "SELECT date as 'Date',amount as 'Amount' FROM Data ORDER BY date DESC;"
     inv_query = "Select date as 'Date', InvestedAmount as 'Invested Amount' FROM Investment ORDER BY date DESC;"
-    inv_df = pd.read_sql_query(inv_query,conn,parse_dates=['Month and Year'])
+    # Read data into a DataFrame
+    df = pd.read_sql_query(Account_query, conn, parse_dates=['Month and Year'])
     #print(df)
+    inv_df = pd.read_sql_query(inv_query,conn,parse_dates=['Month and Year'])
+    #pritn(inv_df)
 
     # Display line chart using Streamlit
     #st.write("""#### Monthly Average""")
@@ -100,6 +101,43 @@ def plotly_LineChart():
     #fig.px.line(inv_df)
     ##fig.show()
     st.plotly_chart(fig)
+
+
+
+def plotly_BarChart():
+    # Execute SQL queries to get data
+    Account_query = "SELECT amount FROM Data ORDER BY date DESC LIMIT 1;"
+    inv_query = "SELECT SUM(InvestedAmount) as 'Invested Amount' FROM Investment;"
+
+    df = pd.read_sql_query(Account_query, conn)
+    inv_df = pd.read_sql_query(inv_query, conn)
+
+    # Get the total amount and invested amount
+    total_amount = df.iloc[0, 0]
+    invested_amount = inv_df.iloc[0]['Invested Amount']
+
+    colour = "darkred"
+    if(total_amount > invested_amount):
+        colour = "darkgreen"
+    # Create the Plotly bar chart
+    fig = go.Figure()
+
+    fig.add_trace(go.Bar(
+        x=[ 'Total Invested Amount','Total Account Amount'],
+        y=[invested_amount, total_amount ],
+        text=[f'${invested_amount:,.2f}',f'${total_amount:,.2f}'],
+        textposition='auto',
+        marker_color=['darkblue', colour]
+    ))
+
+    fig.update_layout(
+        title='Account and Invested Amount',
+        yaxis_title='Amount',
+        showlegend=False
+    )
+
+    st.plotly_chart(fig)
+
 
 def Average_Amount_Table():
     st.write("# Average Acount Amount")
@@ -163,13 +201,14 @@ def raw_table():
 
     # Display the styled DataFrame
     #df_styled
-    st.write(" # Raw Data")
+    st.write(" #### Raw Data")
     st.dataframe(df_styled,width=800,hide_index=True)
 
 sidebar()
 widget_section()
 #streamlit_lineChart()
 plotly_LineChart()
+plotly_BarChart()
 #Average_Amount_Table()
 raw_table()
 
